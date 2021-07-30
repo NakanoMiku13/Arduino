@@ -138,6 +138,15 @@ auto PwdCheck()->bool{
   }
   return true;
 }
+//Funcion para checar la contraseña ingresada en caso que ingrese la default
+auto PwdCheck2()->bool{
+  for(int j=0;j<7;j++){
+    if(tmp[j]!=DfPwd[j]){
+      return false;
+    }
+  }
+  return true;
+}
 //Limpiar el arreglo temporal de la contraseña
 auto ClearTmp()->void{
   memset(tmp,0,sizeof(tmp));
@@ -163,7 +172,7 @@ auto TypePwd()->void{
       lcd.print("Espera...");
       delay(1500);
       Clean();
-      if(PwdCheck()){
+      if(PwdCheck() or PwdCheck2()){
         lcd.print("Correcto");
         Open();
       }else{
