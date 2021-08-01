@@ -26,15 +26,27 @@ Servo servo;
 char text[17];
 char tmp[17];
 int i=0,iT=0;
+bool Active=false;
 //Funcion para checar si hay algo guardado en la memoria, en este caso la contraseña ingresada por el usuario
 auto Check()->void{
   int x=EEPROM.read(0);
   i=0;
-  if(x>0 and x<10){
+  if(x!=0){
+    Active=true;
     for(int j=1;j<=x;j++,i++){
       text[i]=(char)EEPROM.read(j);
     }
+  }else{
+    Active=false;
   }
+}
+//Funcion para limpiar la memoria EEPROM y dejarla en 0, está hasta 18
+//ya que es el tamaño máximo del arreglo es 18
+auto ClearEEPROM()->void{
+  for(int i=0;i<19;i++){
+    EEPROM.write(i,0);
+  }
+  Active=false;
 }
 //Función para ajustar la fila en la que se imprimirá el mensaje
 auto Set(int x)->void{
@@ -69,6 +81,7 @@ auto PrintText()->void{
       lcd.print("Listo");
       delay(1000);
       Clean();
+      Active=true;
       return;
     }else{
       text[i]=customKey;
@@ -85,6 +98,7 @@ auto PrintText()->void{
 //Funcion General para nueva contraseña
 auto NewPwd()->void{
   i=0;
+  ClearEEPROM();
   Clean();
   Set(1);
   lcd.print("Terminar *");
@@ -131,12 +145,16 @@ auto SetConfig()->void{
 }
 //Funcion para checar que la contraseña ingresada por el usuario sea igual a la guardada
 auto PwdCheck()->bool{
-  for(int j=0;j<i;j++){
-    if(tmp[j]!=text[j]){
-      return false;
+  if(iT>0){
+    for(int j=0;j<i;j++){
+      if(tmp[j]!=text[j]){
+        return false;
+      }
     }
+    return true;  
+  }else{
+    return false;
   }
-  return true;
 }
 //Funcion para checar la contraseña ingresada en caso que ingrese la default
 auto PwdCheck2()->bool{
@@ -172,7 +190,7 @@ auto TypePwd()->void{
       lcd.print("Espera...");
       delay(1500);
       Clean();
-      if(PwdCheck() or PwdCheck2()){
+      if((PwdCheck() and Active)or PwdCheck2()){
         lcd.print("Correcto");
         Open();
       }else{
